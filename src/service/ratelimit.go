@@ -79,7 +79,6 @@ func (this *service) reloadConfig(statsManager stats.Manager) {
 	newConfig := this.configLoader.Load(files, statsManager, rlSettings.MergeDomainConfigurations)
 	this.stats.ConfigLoadSuccess.Inc()
 
-	this.configLock.Lock()
 	this.config = newConfig
 	this.globalShadowMode = rlSettings.GlobalShadowMode
 
@@ -92,7 +91,6 @@ func (this *service) reloadConfig(statsManager stats.Manager) {
 
 		this.customHeaderResetHeader = rlSettings.HeaderRatelimitReset
 	}
-	this.configLock.Unlock()
 }
 
 type serviceError string

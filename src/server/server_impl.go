@@ -242,20 +242,39 @@ func newServer(s settings.Settings, name string, statsManager stats.Manager, loc
 		loaderOpts = append(loaderOpts, loader.AllowDotFiles)
 	}
 
+	var err error
 	if s.RuntimeWatchRoot {
-		ret.runtime = loader.New(
+		ret.runtime, err = loader.New2(
 			s.RuntimePath,
 			s.RuntimeSubdirectory,
 			ret.store.ScopeWithTags("runtime", s.ExtraTags),
 			&loader.SymlinkRefresher{RuntimePath: s.RuntimePath},
 			loaderOpts...)
+	} else if s.RuntimeWatchDirectory {
+		ret.runtime, err = loader.New2(
+			filepath.Join(s.RuntimePath, s.RuntimeSubdirectory),
+			"config",
+			ret.store.ScopeWithTags("runtime", s.ExtraTags),
+			&CustomDirectoryRefresher{
+				watchOps: map[loader.FileSystemOp]struct{}{
+					loader.Write:  {},
+					loader.Create: {},
+					loader.Remove: {},
+					loader.Chmod:  {},
+				},
+			},
+			loaderOpts...)
 	} else {
-		ret.runtime = loader.New(
+		ret.runtime, err = loader.New2(
 			filepath.Join(s.RuntimePath, s.RuntimeSubdirectory),
 			"config",
 			ret.store.ScopeWithTags("runtime", s.ExtraTags),
 			&loader.DirectoryRefresher{},
 			loaderOpts...)
+	}
+
+	if err != nil {
+		panic(err)
 	}
 
 	// setup http router

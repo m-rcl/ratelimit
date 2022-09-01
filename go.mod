@@ -57,3 +57,5 @@ require (
 	golang.org/x/sys v0.0.0-20220422013727-9388b58f7150 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
+
+replace "github.com/envoyproxy/ratelimit/src/utils" => ./src/utils
